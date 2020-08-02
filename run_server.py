@@ -19,40 +19,51 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--ip_address')
     parser.add_argument('--port')
+    parser.add_argument('--n_clients')
 
     cli_args = parser.parse_args()
+
+    ip_address = '127.0.0.1'
+    if cli_args.ip_address:
+        ip_address = cli_args.ip_address
+
+    port = 5555
+    if cli_args.port:
+        port = cli_args.port
+
+    n_clients = 2
+    if cli_args.n_clients:
+        n_clients = cli_args.n_clients
 
     print("Initializing game..")
     game = initialize_game()
 
     print("Searching for clients..")
-    server = Server()
+    server = Server(ip_address=ip_address, port=port, n_clients=n_clients)
 
     print("Starting the main loop..")
     previous = time.time()
-    inputs = [[], []]
+    inputs = [[] for idx in range(n_clients)]
     while True:
 
-        if server.n_connected < 2:
+        if server.n_connected < n_clients:
             print("Number of players decresed. Quitting..")
             break
 
         current = time.time()
 
         new_inputs = server.get_inputs()
-        for input_ in new_inputs[0]:
-            if input_ not in inputs[0]:
-                inputs[0].append(input_)
-        for input_ in new_inputs[1]:
-            if input_ not in inputs[1]:
-                inputs[1].append(input_)
+        for idx in range(n_clients):
+            for input_ in new_inputs[idx]:
+                if input_ not in inputs[idx]:
+                    inputs[idx].append(input_)
 
         if current - previous >= UPDATE_INTERVAL:
             pprint("Current inputs: " + str(inputs))
             update(game, inputs)
             server.send_game(game)
             previous = current
-            inputs = [[], []]
+            inputs = [[] for idx in range(n_clients)]
 
     print("Finished.")
 

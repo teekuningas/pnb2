@@ -13,11 +13,12 @@ from constants import SOCKET_MESSAGE_LENGTH
 class Server:
     """ Handles server side socket connections
     """
-    def __init__(self, ip_address='127.0.0.1', port=5555):
+    def __init__(self, ip_address='127.0.0.1', port=5555, n_clients=2):
         """
         """
-        self.messages = [[], []]
+        self.messages = [[] for idx in range(n_clients)]
         self.clients = []
+        self.n_clients = n_clients
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             self.sock = sock
@@ -68,7 +69,7 @@ class Server:
             self.n_connected = 0
 
             # Establish connections two players and then continue
-            while self.n_connected < 2:
+            while self.n_connected < self.n_clients:
                 conn, addr = sock.accept()
                 print("Connected to: " + str(addr))
 
@@ -94,31 +95,19 @@ class Server:
         """
         inputs = []
         
-        player_inputs = []
-        kept_messages = []
-        for message in self.messages[0]:
-            message_dict = json.loads(message)
-            if message_dict['type'] == 'inputs':
-                for val in message_dict['value']:
-                    if val not in player_inputs:
-                        player_inputs.append(val)
-            else:
-                kept_messages.append(message)
-        self.messages[0] = kept_messages
-        inputs.append(player_inputs)
-
-        player_inputs = []
-        kept_messages = []
-        for message in self.messages[1]:
-            message_dict = json.loads(message)
-            if message_dict['type'] == 'inputs':
-                for val in message_dict['value']:
-                    if val not in player_inputs:
-                        player_inputs.append(val)
-            else:
-                kept_messages.append(message)
-        self.messages[1] = kept_messages
-        inputs.append(player_inputs)
+        for idx in range(self.n_clients):
+            player_inputs = []
+            kept_messages = []
+            for message in self.messages[idx]:
+                message_dict = json.loads(message)
+                if message_dict['type'] == 'inputs':
+                    for val in message_dict['value']:
+                        if val not in player_inputs:
+                            player_inputs.append(val)
+                else:
+                    kept_messages.append(message)
+            self.messages[idx] = kept_messages
+            inputs.append(player_inputs)
 
         return inputs
 
@@ -212,5 +201,4 @@ class Client:
         self.messages = kept_messages
 
         return client_idx
-
 

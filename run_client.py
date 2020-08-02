@@ -53,7 +53,7 @@ if __name__ == '__main__':
             break
 
     previous = time.time()
-    inputs = [[], []]
+    inputs = []
     lag = 0
     while True:
         current = time.time()
@@ -69,11 +69,11 @@ if __name__ == '__main__':
 
         # Send inputs to upstream
         if new_inputs:
-            client.send_inputs(inputs)
+            client.send_inputs(new_inputs)
 
         for input_ in new_inputs:
-            if input_ not in inputs[client_idx]:
-                inputs[client_idx].append(input_)
+            if input_ not in inputs:
+                inputs.append(input_)
 
         # Try to get game synchronized
         while lag >= UPDATE_INTERVAL:
@@ -85,9 +85,9 @@ if __name__ == '__main__':
                 merge(game, new_game)
 
             # Predict state of the game with local copy
-            update(game, inputs)
+            update(game, [inputs])
 
-            inputs = [[], []]
+            inputs = []
 
             lag -= UPDATE_INTERVAL
 
