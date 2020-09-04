@@ -1,0 +1,4 @@
+- Handle reconnections
+- Fix input code
+- Fix server main loop ("n_clients error")
+

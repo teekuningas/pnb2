@@ -19,7 +19,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--ip_address')
     parser.add_argument('--port')
-    parser.add_argument('--n_clients')
 
     cli_args = parser.parse_args()
 
@@ -31,15 +30,14 @@ if __name__ == '__main__':
     if cli_args.port:
         port = cli_args.port
 
-    n_clients = 2
-    if cli_args.n_clients:
-        n_clients = cli_args.n_clients
-
     print("Initializing game..")
     game = initialize_game()
 
     print("Searching for clients..")
-    server = Server(ip_address=ip_address, port=port, n_clients=n_clients)
+    server = Server(ip_address=ip_address, port=port)
+
+    import pdb; pdb.set_trace()
+    print("n_clients etc not implemented so stop here")
 
     print("Starting the main loop..")
     previous = time.time()

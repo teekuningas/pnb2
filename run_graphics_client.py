@@ -2,18 +2,16 @@
 """
 
 import argparse
-import keyboard
 import time
 
-from network import Client
+from network import GraphicsClient
 
 from graphics import initialize
 from graphics import render
 
-from input_ import get_inputs
-
 from game import update
 from game import merge
+
 
 from constants import UPDATE_INTERVAL
 
@@ -39,12 +37,10 @@ if __name__ == '__main__':
     window = initialize()
 
     # Establish connection
-    client = Client(ip_address, port)
+    client = GraphicsClient(ip_address, port)
+    print(client.client_id)
 
-    while True:
-        client_idx = client.get_client_idx()
-        if client_idx is not None:
-            break
+    import pdb; pdb.set_trace()
 
     # Get initial copy of the game state
     while True:
@@ -65,16 +61,6 @@ if __name__ == '__main__':
             print("Connection dead.. Quitting..")
             break
 
-        new_inputs = get_inputs()
-
-        # Send inputs to upstream
-        if new_inputs:
-            client.send_inputs(new_inputs)
-
-        for input_ in new_inputs:
-            if input_ not in inputs:
-                inputs.append(input_)
-
         # Try to get game synchronized
         while lag >= UPDATE_INTERVAL:
             print("Updating game.")
@@ -84,10 +70,7 @@ if __name__ == '__main__':
             if new_game:
                 merge(game, new_game)
 
-            # Predict state of the game with local copy
-            update(game, [inputs])
-
-            inputs = []
+            update(game)
 
             lag -= UPDATE_INTERVAL
 
