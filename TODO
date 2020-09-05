@@ -1,4 +1,3 @@
-- Handle reconnections
-- Fix input code
-- Fix server main loop ("n_clients error")
-
+- Fix player client code (remove import pdb and test what happens)
+- Fix graphics client code (is it possible to allow graphics clients to join whenever they want..? no right?)
+- Finally plot

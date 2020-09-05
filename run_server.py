@@ -11,6 +11,7 @@ from game import update
 from network import Server
 
 from constants import UPDATE_INTERVAL
+from constants import N_PLAYER_CLIENTS_NEEDED
 
 
 if __name__ == '__main__':
@@ -36,22 +37,17 @@ if __name__ == '__main__':
     print("Searching for clients..")
     server = Server(ip_address=ip_address, port=port)
 
-    import pdb; pdb.set_trace()
-    print("n_clients etc not implemented so stop here")
-
     print("Starting the main loop..")
     previous = time.time()
-    inputs = [[] for idx in range(n_clients)]
+    inputs = [[] for idx in range(N_PLAYER_CLIENTS_NEEDED)]
     while True:
 
-        if server.n_connected < n_clients:
-            print("Number of players decresed. Quitting..")
-            break
+        server.handle_disconnections()
 
         current = time.time()
 
         new_inputs = server.get_inputs()
-        for idx in range(n_clients):
+        for idx in range(N_PLAYER_CLIENTS_NEEDED):
             for input_ in new_inputs[idx]:
                 if input_ not in inputs[idx]:
                     inputs[idx].append(input_)
@@ -61,7 +57,7 @@ if __name__ == '__main__':
             update(game, inputs)
             server.send_game(game)
             previous = current
-            inputs = [[] for idx in range(n_clients)]
+            inputs = [[] for idx in range(N_PLAYER_CLIENTS_NEEDED)]
 
     print("Finished.")
 

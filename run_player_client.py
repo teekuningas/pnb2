@@ -21,6 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('--ip_address')
     parser.add_argument('--port')
     parser.add_argument('--bind_key')
+    parser.add_argument('--rejoin_key')
 
     cli_args = parser.parse_args()
 
@@ -36,10 +37,14 @@ if __name__ == '__main__':
     if cli_args.bind_key:
         bind_key = cli_args.bind_key
 
-    # Establish connection
-    client = PlayerClient(ip_address, port)
+    rejoin_key = None
+    if cli_args.rejoin_key:
+        rejoin_key = cli_args.rejoin_key
 
-    print(client.client_id)
+    # Establish connection
+    client = PlayerClient(ip_address, port, rejoin_key)
+
+    print('Client ID (use on rejoin): ' + client.client_id)
     import pdb; pdb.set_trace()
 
     # Get initial copy of the game state
