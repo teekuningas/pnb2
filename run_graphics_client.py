@@ -38,9 +38,7 @@ if __name__ == '__main__':
 
     # Establish connection
     client = GraphicsClient(ip_address, port)
-    print(client.client_id)
-
-    import pdb; pdb.set_trace()
+    print("Client ID: " + client.client_id)
 
     # Get initial copy of the game state
     while True:
@@ -70,7 +68,7 @@ if __name__ == '__main__':
             if new_game:
                 merge(game, new_game)
 
-            update(game)
+            update(game, [])
 
             lag -= UPDATE_INTERVAL
 

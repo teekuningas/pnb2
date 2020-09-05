@@ -45,7 +45,6 @@ if __name__ == '__main__':
     client = PlayerClient(ip_address, port, rejoin_key)
 
     print('Client ID (use on rejoin): ' + client.client_id)
-    import pdb; pdb.set_trace()
 
     # Get initial copy of the game state
     while True:

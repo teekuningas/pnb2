@@ -1,3 +1,2 @@
-- Fix player client code (remove import pdb and test what happens)
-- Fix graphics client code (is it possible to allow graphics clients to join whenever they want..? no right?)
-- Finally plot
+- Update game so that two teams are created, one person is controlled in each team, and move commands move the people
+- And add matplotlib plot that draws the players as dots.
