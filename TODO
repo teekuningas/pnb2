@@ -1,2 +1,1 @@
-- Update game so that two teams are created, one person is controlled in each team, and move commands move the people
-- And add matplotlib plot that draws the players as dots.
+- Implement glumpy graphics

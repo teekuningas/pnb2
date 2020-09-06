@@ -68,7 +68,7 @@ if __name__ == '__main__':
             if new_game:
                 merge(game, new_game)
 
-            update(game, [])
+            update(game)
 
             lag -= UPDATE_INTERVAL
 

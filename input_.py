@@ -11,28 +11,32 @@ def get_inputs(bind_key):
         movements = []
         if keyboard.is_pressed('a'):
             movements.append('CONTROLLED_MOVE_LEFT')
-        if keyboard.is_pressed('d'):
+        elif keyboard.is_pressed('d'):
             movements.append('CONTROLLED_MOVE_RIGHT')
+        else:
+            movements.append('CONTROLLED_MOVE_LEFTRIGHT_STOP')
         if keyboard.is_pressed('w'):
             movements.append('CONTROLLED_MOVE_UP')
-        if keyboard.is_pressed('s'):
+        elif keyboard.is_pressed('s'):
             movements.append('CONTROLLED_MOVE_DOWN')
-        if not movements:
-            movements.append('CONTROLLED_MOVE_STOP')
+        else:
+            movements.append('CONTROLLED_MOVE_UPDOWN_STOP')
         actions.extend(movements)
 
     elif bind_key == 'keyboard_right':
         movements = []
         if keyboard.is_pressed('left'):
             movements.append('CONTROLLED_MOVE_LEFT')
-        if keyboard.is_pressed('right'):
+        elif keyboard.is_pressed('right'):
             movements.append('CONTROLLED_MOVE_RIGHT')
+        else:
+            movements.append('CONTROLLED_MOVE_LEFTRIGHT_STOP')
         if keyboard.is_pressed('up'):
             movements.append('CONTROLLED_MOVE_UP')
-        if keyboard.is_pressed('down'):
+        elif keyboard.is_pressed('down'):
             movements.append('CONTROLLED_MOVE_DOWN')
-        if not movements:
-            movements.append('CONTROLLED_MOVE_STOP')
+        else:
+            movements.append('CONTROLLED_MOVE_UPDOWN_STOP')
         actions.extend(movements)
 
     return actions

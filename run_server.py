@@ -53,7 +53,6 @@ if __name__ == '__main__':
                     inputs[idx].append(input_)
 
         if current - previous >= UPDATE_INTERVAL:
-            pprint("Current inputs: " + str(inputs))
             update(game, inputs)
             server.send_game(game)
             previous = current

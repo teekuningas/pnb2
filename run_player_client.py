@@ -12,6 +12,7 @@ from game import update
 from game import merge
 
 from constants import UPDATE_INTERVAL
+from constants import N_PLAYER_CLIENTS_NEEDED
 
 
 if __name__ == '__main__':
@@ -46,6 +47,8 @@ if __name__ == '__main__':
 
     print('Client ID (use on rejoin): ' + client.client_id)
 
+    player_idx = client.client_id.split('#')[0]
+
     # Get initial copy of the game state
     while True:
         game = client.get_game()
@@ -53,7 +56,6 @@ if __name__ == '__main__':
             break
 
     previous = time.time()
-    inputs = []
     lag = 0
     while True:
         current = time.time()
@@ -71,10 +73,6 @@ if __name__ == '__main__':
         if new_inputs:
             client.send_inputs(new_inputs)
 
-        for input_ in new_inputs:
-            if input_ not in inputs:
-                inputs.append(input_)
-
         # Try to get game synchronized
         while lag >= UPDATE_INTERVAL:
             print("Updating game.")
@@ -85,9 +83,7 @@ if __name__ == '__main__':
                 merge(game, new_game)
 
             # Predict state of the game with local copy
-            update(game, [inputs])
-
-            inputs = []
+            update(game)
 
             lag -= UPDATE_INTERVAL
 
