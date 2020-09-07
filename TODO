@@ -1,1 +1,3 @@
 - Implement glumpy graphics
+- I might have to send the inputs from clients to graphics unit, to increase responsivity. 
+- Increasing update_interval improve responsivity greatly. so its possible that its enough to just clean up everything input-wise (no sending inputs from clients to graphics). graphics drawing must still of course use the dt
