@@ -75,7 +75,6 @@ if __name__ == '__main__':
 
         # Try to get game synchronized
         while lag >= UPDATE_INTERVAL:
-            print("Updating game.")
 
             # Get official version of the game from upstream and merge
             new_game = client.get_game()

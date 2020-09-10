@@ -55,15 +55,15 @@ def update(game, inputs=None):
             continue
 
         if 'CONTROLLED_MOVE_LEFT' in inputs[player['team']]:
-            player['dx'] = -1
+            player['dx'] = -0.5
         if 'CONTROLLED_MOVE_RIGHT' in inputs[player['team']]:
-            player['dx'] = 1
+            player['dx'] = 0.5
         if 'CONTROLLED_MOVE_LEFTRIGHT_STOP' in inputs[player['team']]:
             player['dx'] = 0
         if 'CONTROLLED_MOVE_DOWN' in inputs[player['team']]:
-            player['dz'] = -1
+            player['dz'] = -0.5
         if 'CONTROLLED_MOVE_UP' in inputs[player['team']]:
-            player['dz'] = 1
+            player['dz'] = 0.5
         if 'CONTROLLED_MOVE_UPDOWN_STOP' in inputs[player['team']]:
             player['dz'] = 0
 

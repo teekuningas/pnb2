@@ -34,7 +34,7 @@ if __name__ == '__main__':
         port = cli_args.port
 
     # Initialize graphics
-    window = initialize()
+    gfx_engine = initialize()
 
     # Establish connection
     client = GraphicsClient(ip_address, port)
@@ -61,8 +61,6 @@ if __name__ == '__main__':
 
         # Try to get game synchronized
         while lag >= UPDATE_INTERVAL:
-            print("Updating game.")
-
             # Get official version of the game from upstream and merge
             new_game = client.get_game()
             if new_game:
@@ -73,7 +71,7 @@ if __name__ == '__main__':
             lag -= UPDATE_INTERVAL
 
         # Render when not occupied with the update
-        render(window, game, lag / UPDATE_INTERVAL)
+        render(gfx_engine, game, lag / UPDATE_INTERVAL)
 
     print("Finished.")
 
