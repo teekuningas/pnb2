@@ -20,9 +20,10 @@ void main()
 """
 
 fragment = """
+uniform vec4 color;
 void main()
 {
-    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    gl_FragColor = color;
 }
 """
 
@@ -62,6 +63,12 @@ class Engine:
         for player in self.game['players']:
             predicted_x = player['x'] + player['dx']*dt
             predicted_z = player['z'] + player['dz']*dt
+
+            if player['team'] == 0:
+                cube['color'] = [1, 0, 0, 1]
+            else:
+                cube['color'] = [0, 1, 0, 1]
+
             cube['view'] = glm.translation(predicted_x, predicted_z, -50)
             cube.draw(gl.GL_TRIANGLES, self.I)
 
@@ -91,7 +98,7 @@ def initialize():
     """ 
     """
 
-    window = app.Window(width=512, height=512, color=(1, 1, 1, 1))
+    window = app.Window(width=512, height=512, color=(0, 0, 0, 1))
     backend = app.__backend__
 
     engine = Engine(window, backend)
