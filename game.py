@@ -71,21 +71,3 @@ def update(game, inputs=None):
         player['x'] += player['dx']
         player['z'] += player['dz']
 
-
-def deepmerge(destination, source):
-    """ Merges two nested dictionaries 
-    """
-    for key, value in source.items():
-        if isinstance(value, dict):
-            node = destination.setdefault(key, {})
-            deepmerge(node, value)
-        else:
-            destination[key] = value
-
-    return destination
-
-def merge(game, new_game):
-    """ Merges upstream game to local one 
-    """
-    deepmerge(game, new_game) 
-

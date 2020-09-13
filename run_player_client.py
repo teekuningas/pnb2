@@ -9,7 +9,6 @@ from network import PlayerClient
 from input_ import get_inputs
 
 from game import update
-from game import merge
 
 from constants import UPDATE_INTERVAL
 from constants import N_PLAYER_CLIENTS_NEEDED
@@ -75,13 +74,13 @@ if __name__ == '__main__':
         # Try to get game synchronized
         while lag >= UPDATE_INTERVAL:
 
-            # Get official version of the game from upstream and merge
             new_game = client.get_game()
             if new_game:
-                merge(game, new_game)
-
-            # Predict state of the game with local copy
-            update(game)
+                # if game available from socket, use it
+                game = new_game
+            else:
+                # else, predict
+                update(game)
 
             lag -= UPDATE_INTERVAL
 
