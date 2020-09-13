@@ -1,4 +1,4 @@
-""" Contains basic way to run client side game loop
+""" Contains basic way to run observation client
 """
 
 import argparse
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     if cli_args.port:
         port = cli_args.port
 
-    # Initialize graphics
+    # Initialize graphics engine
     gfx_engine = initialize()
 
     # Establish connection
@@ -47,13 +47,11 @@ if __name__ == '__main__':
             break
 
     previous = time.time()
-    inputs = []
     lag = 0
     while True:
         current = time.time()
-        elapsed = current - previous
+        lag += current - previous
         previous = current
-        lag += elapsed
 
         if not client.connection_alive:
             print("Connection dead.. Quitting..")
@@ -61,11 +59,13 @@ if __name__ == '__main__':
 
         # Try to get game synchronized
         while lag >= UPDATE_INTERVAL:
+
             # Get official version of the game from upstream and merge
             new_game = client.get_game()
             if new_game:
                 merge(game, new_game)
 
+            # Predict the state of the game with local copy
             update(game)
 
             lag -= UPDATE_INTERVAL

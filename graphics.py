@@ -29,6 +29,8 @@ void main()
 
 class Engine:
     def __init__(self, window, backend):
+        """
+        """
         self.window = window
         self.backend = backend
 
@@ -55,7 +57,8 @@ class Engine:
         self.on_close = window.event(self.on_close)
 
     def on_draw(self, dt):
-
+        """
+        """
         window = self.window
         window.clear()
         cube = self.cube

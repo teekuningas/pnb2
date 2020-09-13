@@ -8,7 +8,6 @@ import time
 
 from _thread import * 
 
-
 from constants import SOCKET_MESSAGE_LENGTH
 from constants import JOIN_TIMEOUT
 from constants import ID_SUFFIX_LENGTH
@@ -37,8 +36,13 @@ class Server:
     def threaded_client(self, conn, client_idx):
         """
         """
-        client_state = {'conn': conn, 'type': None, 'messages': [],
-                        'id': None, 'connected': True, 'rejoined': False}
+        client_state = {'conn': conn, 
+                        'type': None, 
+                        'messages': [],
+                        'id': None, 
+                        'connected': True, 
+                        'initialized': False,
+                        'active': True}
         self.clients[client_idx] = client_state
 
         buffer_ = ""
@@ -57,50 +61,61 @@ class Server:
                 buffer_, messages = self.read_messages(conn, buffer_, client_idx)
                 for message in messages:
                     message_dict = json.loads(message)
+
                     if message_dict.get('type', '') == 'PLAYER_JOIN':
                         if self.n_player_clients_joined() < N_PLAYER_CLIENTS_NEEDED:
+
                             secure_str = ''.join((secrets.choice(string.ascii_letters) 
                                                   for i in range(ID_SUFFIX_LENGTH)))
                             player_idx = self.n_player_clients_joined()
                             id_ = str(player_idx) + '#' + secure_str
+
                             client_state['type'] = 'player'
                             client_state['id'] = id_
+
                             message_dict = {'type': 'PLAYER_JOIN_APPROVED',
                                             'value': id_}
                             conn.send(json.dumps(message_dict).encode('UTF-8') + 
                                       '$'.encode('utf-8'))
                             done = True
                         else:
+                            client_state['connected'] = False
+                            client_state['initialized'] = True
+
                             message_dict = {'type': 'PLAYER_JOIN_DECLINED'}
                             conn.send(json.dumps(message_dict).encode('UTF-8') + 
                                       '$'.encode('utf-8'))
-                            client_state['connected'] = False
-                            client_state['initialized'] = True
                             conn.close()
                             return
+
                     elif message_dict.get('type', '') == 'PLAYER_REJOIN':
                         rejoin_key = message_dict.get('value', '')
+
+                        # check if valid old client state exists and mark it as inactive
                         found = False
                         for idx, state in self.clients.items():
-                            if state.get('type') == 'player' and state.get('rejoined') == False:
+                            if state.get('type') == 'player' and state.get('active') == True:
                                 if state.get('connected') == False:
                                     if state.get('id') == rejoin_key:
-                                        state['rejoined'] = True
+                                        state['active'] = False
                                         found = True
+
                         if found:
                             client_state['type'] = 'player'
                             client_state['id'] = rejoin_key
+
                             message_dict = {'type': 'PLAYER_REJOIN_APPROVED',
                                             'value': rejoin_key}
                             conn.send(json.dumps(message_dict).encode('UTF-8') + 
                                       '$'.encode('utf-8'))
                             done = True
                         else:
+                            client_state['connected'] = False
+                            client_state['initialized'] = True
+
                             message_dict = {'type': 'PLAYER_REJOIN_DECLINED'}
                             conn.send(json.dumps(message_dict).encode('UTF-8') + 
                                       '$'.encode('utf-8'))
-                            client_state['connected'] = False
-                            client_state['initialized'] = True
                             conn.close()
                             return
 
@@ -108,6 +123,7 @@ class Server:
                         secure_str = ''.join((secrets.choice(string.ascii_letters) 
                                               for i in range(ID_SUFFIX_LENGTH)))
                         id_ = 'x#' + secure_str
+
                         client_state['type'] = 'graphics'
                         client_state['id'] = id_
 
@@ -125,8 +141,10 @@ class Server:
                 conn.close()
                 return
 
+        # if survived here, mark as initialized
         client_state['initialized'] = True
 
+        # and continue to post-initialization communication
         while True:
             try:
                 buffer_, messages = self.read_messages(conn, buffer_, client_idx)
@@ -139,7 +157,7 @@ class Server:
                 return
 
     def look_for_joins(self):
-        """
+        """ Actively, in a thread, look for client joining
         """
         while True:
             conn, addr = self.sock.accept()
@@ -153,13 +171,15 @@ class Server:
 
             start_new_thread(self.threaded_client, (conn, client_idx))
 
+            # start processing next client only after the current has 
+            # been marked as initialized
             while True:
                 if client_idx in self.clients:
                     if self.clients[client_idx].get('initialized'):
                         break
 
     def n_player_clients_connected(self):
-        """
+        """ How many player clients connected 
         """
         count = 0
         for state in list(self.clients.values()):
@@ -170,7 +190,7 @@ class Server:
 
 
     def n_player_clients_joined(self):
-        """
+        """ How many players have been connected
         """
         count = 0
         for state in list(self.clients.values()):
@@ -179,13 +199,14 @@ class Server:
         return count
 
     def handle_disconnections(self):
-        """
+        """ Check for disconnections and if disconnection detected,
+        inform all clients and block until the same player has joined back
         """
 
         # check if any player has disconnected
         disconnections = False
         for state in list(self.clients.values()):
-            if state.get('type') == 'player' and state.get('rejoined') == False:
+            if state.get('type') == 'player' and state.get('active') == True:
                 if state.get('connected') == False:
                     disconnections = True
                     break
@@ -203,9 +224,6 @@ class Server:
                     json.dumps(message_dict).encode('UTF-8') + 
                     '$'.encode('utf-8'))
 
-        # and start looking for rejoins
-        # self.look_for_joins()
-
         while True:
             if self.n_player_clients_connected() == N_PLAYER_CLIENTS_NEEDED:
                 break
@@ -213,6 +231,8 @@ class Server:
         print("Player has rejoined.. Continuing.")
 
     def read_messages(self, conn, buffer_, client_idx):
+        """
+        """
         message = conn.recv(SOCKET_MESSAGE_LENGTH)
         buffer_ = buffer_ + message.decode('utf-8')
 
@@ -364,21 +384,22 @@ class PlayerClient(Client):
 
         done = False
         while not done:
+            kept_messages = []
             for message in self.messages:
                 message_dict = json.loads(message)
-                if rejoin_key:
-                    if message_dict['type'] == 'PLAYER_REJOIN_APPROVED':
-                        self.client_id = message_dict['value']
-                        done = True
-                    elif message_dict['type'] == 'PLAYER_REJOIN_DECLINED':
-                        raise Exception('PLAYER_REJOIN DECLINED BY SERVER')
+                if message_dict['type'] == 'PLAYER_REJOIN_APPROVED':
+                    self.client_id = message_dict['value']
+                    done = True
+                elif message_dict['type'] == 'PLAYER_REJOIN_DECLINED':
+                    raise Exception('PLAYER_REJOIN DECLINED BY SERVER')
+                elif message_dict['type'] == 'PLAYER_JOIN_APPROVED':
+                    self.client_id = message_dict['value']
+                    done = True
+                elif message_dict['type'] == 'PLAYER_JOIN_DECLINED':
+                    raise Exception('PLAYER_JOIN DECLINED BY SERVER')
                 else:
-
-                    if message_dict['type'] == 'PLAYER_JOIN_APPROVED':
-                        self.client_id = message_dict['value']
-                        done = True
-                    elif message_dict['type'] == 'PLAYER_JOIN_DECLINED':
-                        raise Exception('PLAYER_JOIN DECLINED BY SERVER')
+                    kept_messages.append(message)
+            self.messages = kept_messages
 
     def send_inputs(self, inputs):
         """ Send inputs from client to server side

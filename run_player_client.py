@@ -59,9 +59,8 @@ if __name__ == '__main__':
     lag = 0
     while True:
         current = time.time()
-        elapsed = current - previous
+        lag += current - previous
         previous = current
-        lag += elapsed
 
         if not client.connection_alive:
             print("Connection dead.. Quitting..")

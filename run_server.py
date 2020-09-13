@@ -46,16 +46,19 @@ if __name__ == '__main__':
 
         current = time.time()
 
+        # pile up inputs
         new_inputs = server.get_inputs()
         for idx in range(N_PLAYER_CLIENTS_NEEDED):
             for input_ in new_inputs[idx]:
                 if input_ not in inputs[idx]:
                     inputs[idx].append(input_)
 
+        # and if enough time has passed, update game state
         if current - previous >= UPDATE_INTERVAL:
             update(game, inputs)
             server.send_game(game)
             previous = current
+            # start piling up new round of inputs
             inputs = [[] for idx in range(N_PLAYER_CLIENTS_NEEDED)]
 
     print("Finished.")
