@@ -1,1 +1,35 @@
 - Kuinka tehdä vielä smoothimpi tuosta grafiikasta? 
+- Inputit pitää tulla pienestäkin näpäytyksestä! eli ehkä is_pressedin sijaan joku event handler
+
+- Arkkitehtuuri:
+ * run_client.py (Ajettavissa skriptinä, mutta pitää sisällään funktion, jossa kaikki olennainen)
+  -> Game room
+ * run_server.py (Ajettavissa skriptinä, mutta pitää sisällään funktion, jossa kaikki olennainen)
+  ** Wait for game room selections
+  ** Start the main game loop
+ * run_observation.py (Ajettavissa skriptinä, mutta pitää sisällään funktion, jossa kaikki olennainen)
+  ** Start observation when main game loop has started
+ * run_gui.py
+  ** Single player (Creates local one-player game)
+   -> Game room
+  ** Multiplayer
+   ** Local (Creates local two-player game)
+     -> Game room
+   ** Internet
+    ** Create server (Ask basic settings, creates player client and server locally)
+      -> Game room 
+    ** Join server (Creates player client)
+      -> Game room
+    ** Observe (Creates observation client)
+      -> During game room, wait
+      -> During game, show game
+  ** Quit
+
+Game room (not part of the gui):
+ - Allows to choose teams and strategy
+ - Clean and simple UI, should work both local and over network
+  * When local, let first player choose, and then let second player choose. then everything ready.
+  * When over network, server should wait that both players have sent message that everything is ready.
+ - Then when accepted, the game starts.
+
+Have to make sure that the local and the networking engines stay as close to each other as possible but still let the local one have same privileges over resources.
