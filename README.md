@@ -11,6 +11,10 @@ pip install keyboard
 ### Download package and enter the folder
 git clone https://github.com/Teekuningas/pnb2
 cd pnb2
+
+### steamworks
+Use steampak and steamworks 1.42, run steam within same terminal.
+
 ### Running the game
 #### Run server
 python run\_server.py

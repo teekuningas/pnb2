@@ -1,3 +1,9 @@
+- steampak steamia varten
+- qt:lla gui
+- pyinstallerilla standalone
+- serverilistaus mun palvelimelle tai teekuningas.net-domainiin. (make locatable x)
+- jos joinaa, palvelin voisi lähettää viestin että on jo täynnä, mutta odotetaan pelaajaa. voit liittyä rejoinilla.
+- Luulen että steampak parempi kuin steamworkspy. steampakissa varmaan periaatteessa kaikki. mutta pitää miettiä voisiko jollekin pnb:n natiiviosille löytää korvaajan steamista. niinkun socketeille, highscoreille ja achievementeille. ne voisi kaikki tehdä natiivina pnb:hen, mutta tehdä ne helposti korvattaviksi
 - Kuinka tehdä vielä smoothimpi tuosta grafiikasta? 
 - Inputit pitää tulla pienestäkin näpäytyksestä! eli ehkä is_pressedin sijaan joku event handler
 
