@@ -5,8 +5,9 @@ import json
 import string
 import secrets
 import time
+import sys
 
-from _thread import * 
+import threading
 
 from constants import SOCKET_MESSAGE_LENGTH
 from constants import JOIN_TIMEOUT
@@ -27,7 +28,8 @@ class Server:
 
         print("Waiting for connections, server started..")
 
-        start_new_thread(self.look_for_joins, ())
+        t = threading.Thread(target=self.look_for_joins)
+        t.start()
 
         while True:
             if self.n_player_clients_connected() == N_PLAYER_CLIENTS_NEEDED:
@@ -39,6 +41,7 @@ class Server:
         client_state = {'conn': conn, 
                         'type': None, 
                         'messages': [],
+                        'messages_lock': threading.Lock(),
                         'id': None, 
                         'connected': True, 
                         'initialized': False,
@@ -148,7 +151,12 @@ class Server:
         while True:
             try:
                 buffer_, messages = self.read_messages(conn, buffer_, client_idx)
-                self.clients[client_idx]['messages'].extend(messages)
+
+                if messages:
+                    self.clients[client_idx]['messages_lock'].acquire()
+                    self.clients[client_idx]['messages'].extend(messages)
+                    self.clients[client_idx]['messages_lock'].release()
+
             except Exception as exc:
                 print(str(exc))
                 print("Lost connection to " + str(client_idx))
@@ -169,7 +177,8 @@ class Server:
             else:
                 client_idx = 0
 
-            start_new_thread(self.threaded_client, (conn, client_idx))
+            t = threading.Thread(target=self.threaded_client, args=(conn, client_idx))
+            t.start()
 
             # start processing next client only after the current has 
             # been marked as initialized
@@ -270,17 +279,19 @@ class Server:
         for state in list(self.clients.values()):
             if state.get('type') == 'player' and state.get('connected'):
                 player_inputs = []
-                kept_messages = []
+
                 input_idx = int(state.get('id').split('#')[0])
-                for message in state.get('messages'):
+
+                state['messages_lock'].acquire()
+                for message_idx, message in enumerate(state.get('messages')):
                     message_dict = json.loads(message)
                     if message_dict['type'] == 'INPUTS':
+                        state['messages'].pop(message_idx)
                         for val in message_dict['value']:
                             if val not in player_inputs:
                                 player_inputs.append(val)
-                    else:
-                        kept_messages.append(message)
-                state['messages'] = kept_messages
+                state['messages_lock'].release()
+
                 inputs[input_idx] = player_inputs
         return inputs
 
@@ -293,6 +304,7 @@ class Client:
         """
         """
         self.messages = []
+        self.messages_lock = threading.Lock()
         self.client_id = None
         self.sock = None
         self.connection_alive = False
@@ -321,7 +333,10 @@ class Client:
                                 parts.append(buffer_[:idx])
                                 buffer_ = buffer_[idx+1:]
 
-                            self.messages.extend(parts)
+                            if parts:
+                                self.messages_lock.acquire()
+                                self.messages.extend(parts)
+                                self.messages_lock.release()
 
                     except Exception as exc:
                         print(str(exc))
@@ -331,9 +346,12 @@ class Client:
                 print("Lost connection to server.")
 
         # Run client-side socket messaging in thread
-        start_new_thread(threaded_connection, ())
+
+        t = threading.Thread(target=threaded_connection)
+        t.start()
+
         while True:
-            if not self.sock:
+            if not self.connection_alive:
                 continue
             self.join_game(rejoin_key)
             return self
@@ -342,14 +360,14 @@ class Client:
         """ Get upstream game from server to client side
         """
         game = None
-        kept_messages = []
-        for message in self.messages:
+
+        self.messages_lock.acquire()
+        for message_idx, message in enumerate(self.messages):
             message_dict = json.loads(message)
             if message_dict['type'] == 'GAME':
+                self.messages.pop(message_idx)
                 game = message_dict['value']
-            else:
-                kept_messages.append(message)
-        self.messages = kept_messages
+        self.messages_lock.release()
 
         return game
 
@@ -384,22 +402,25 @@ class PlayerClient(Client):
 
         done = False
         while not done:
-            kept_messages = []
-            for message in self.messages:
+
+            self.messages_lock.acquire()
+            for message_idx, message in enumerate(self.messages):
                 message_dict = json.loads(message)
                 if message_dict['type'] == 'PLAYER_REJOIN_APPROVED':
+                    self.messages.pop(message_idx)
                     self.client_id = message_dict['value']
                     done = True
                 elif message_dict['type'] == 'PLAYER_REJOIN_DECLINED':
+                    self.messages.pop(message_idx)
                     raise Exception('PLAYER_REJOIN DECLINED BY SERVER')
                 elif message_dict['type'] == 'PLAYER_JOIN_APPROVED':
+                    self.messages.pop(message_idx)
                     self.client_id = message_dict['value']
                     done = True
                 elif message_dict['type'] == 'PLAYER_JOIN_DECLINED':
+                    self.messages.pop(message_idx)
                     raise Exception('PLAYER_JOIN DECLINED BY SERVER')
-                else:
-                    kept_messages.append(message)
-            self.messages = kept_messages
+            self.messages_lock.release()
 
     def send_inputs(self, inputs):
         """ Send inputs from client to server side
@@ -436,15 +457,14 @@ class GraphicsClient(Client):
 
         done = False
         while not done:
-            kept_messages = []
-            for message in self.messages:
+            self.messages_lock.acquire()
+            for message_idx, message in enumerate(self.messages):
                 message_dict = json.loads(message)
                 if message_dict['type'] == 'GRAPHICS_JOIN_APPROVED':
+                    self.messages.pop(message_idx)
                     self.client_id = message_dict['value']
                     done = True
                 elif message_dict['type'] == 'GRAPHICS_JOIN_DECLINED':
                     raise Exception('GRAPHICS_JOIN DECLINED BY SERVER')
-                else:
-                    kept_messages.append(message)
-            self.messages = kept_messages
+            self.messages_lock.release()
 
