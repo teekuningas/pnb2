@@ -5,6 +5,9 @@ import sys
 """
 from server_browser_ui import Ui_ServerBrowser
 
+from create_server_dialog_main import CreateServerDialogMain
+from add_server_dialog_main import AddServerDialogMain
+
 from PyQt5.Qt import QApplication
 from PyQt5 import QtWidgets
 
@@ -57,7 +60,8 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         if checked is None:
             return
 
-        print("Add clicked")
+        dialog = AddServerDialogMain(self)
+        dialog.show()
 
     def on_pushButtonCreate_clicked(self, checked=None):
         """
@@ -65,7 +69,8 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         if checked is None:
             return
 
-        print("Create clicked")
+        dialog = CreateServerDialogMain(self)
+        dialog.show()
 
     def on_pushButtonJoin_clicked(self, checked=None):
         """
