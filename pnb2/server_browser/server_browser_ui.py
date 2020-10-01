@@ -2,16 +2,18 @@
 
 # Form implementation generated from reading ui file 'server_browser.ui'
 #
-# Created by: PyQt5 UI code generator 5.9.2
+# Created by: PyQt5 UI code generator 5.12.3
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_ServerBrowser(object):
     def setupUi(self, ServerBrowser):
         ServerBrowser.setObjectName("ServerBrowser")
-        ServerBrowser.resize(652, 444)
+        ServerBrowser.resize(740, 444)
         self.centralwidget = QtWidgets.QWidget(ServerBrowser)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
@@ -21,7 +23,7 @@ class Ui_ServerBrowser(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 632, 382))
+        self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 720, 382))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
         self.gridLayout = QtWidgets.QGridLayout(self.scrollAreaWidgetContents)
         self.gridLayout.setObjectName("gridLayout")
@@ -43,7 +45,7 @@ class Ui_ServerBrowser(object):
         self.tableWidgetServers.setShowGrid(True)
         self.tableWidgetServers.setCornerButtonEnabled(True)
         self.tableWidgetServers.setObjectName("tableWidgetServers")
-        self.tableWidgetServers.setColumnCount(3)
+        self.tableWidgetServers.setColumnCount(6)
         self.tableWidgetServers.setRowCount(1)
         item = QtWidgets.QTableWidgetItem()
         self.tableWidgetServers.setVerticalHeaderItem(0, item)
@@ -54,12 +56,19 @@ class Ui_ServerBrowser(object):
         item = QtWidgets.QTableWidgetItem()
         self.tableWidgetServers.setHorizontalHeaderItem(2, item)
         item = QtWidgets.QTableWidgetItem()
+        self.tableWidgetServers.setHorizontalHeaderItem(3, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidgetServers.setHorizontalHeaderItem(4, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidgetServers.setHorizontalHeaderItem(5, item)
+        item = QtWidgets.QTableWidgetItem()
         self.tableWidgetServers.setItem(0, 0, item)
         item = QtWidgets.QTableWidgetItem()
-        self.tableWidgetServers.setItem(0, 1, item)
-        item = QtWidgets.QTableWidgetItem()
         self.tableWidgetServers.setItem(0, 2, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.tableWidgetServers.setItem(0, 3, item)
         self.tableWidgetServers.horizontalHeader().setCascadingSectionResizes(False)
+        self.tableWidgetServers.horizontalHeader().setMinimumSectionSize(26)
         self.tableWidgetServers.horizontalHeader().setStretchLastSection(True)
         self.tableWidgetServers.verticalHeader().setVisible(False)
         self.tableWidgetServers.verticalHeader().setCascadingSectionResizes(False)
@@ -81,7 +90,7 @@ class Ui_ServerBrowser(object):
         self.gridLayout_2.addWidget(self.scrollArea, 0, 0, 1, 1)
         ServerBrowser.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(ServerBrowser)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 652, 20))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 740, 20))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -115,16 +124,22 @@ class Ui_ServerBrowser(object):
         item = self.tableWidgetServers.horizontalHeaderItem(0)
         item.setText(_translate("ServerBrowser", "Name"))
         item = self.tableWidgetServers.horizontalHeaderItem(1)
-        item.setText(_translate("ServerBrowser", "Players"))
+        item.setText(_translate("ServerBrowser", "Status"))
         item = self.tableWidgetServers.horizontalHeaderItem(2)
+        item.setText(_translate("ServerBrowser", "Players"))
+        item = self.tableWidgetServers.horizontalHeaderItem(3)
         item.setText(_translate("ServerBrowser", "Type"))
+        item = self.tableWidgetServers.horizontalHeaderItem(4)
+        item.setText(_translate("ServerBrowser", "Address"))
+        item = self.tableWidgetServers.horizontalHeaderItem(5)
+        item.setText(_translate("ServerBrowser", "Port"))
         __sortingEnabled = self.tableWidgetServers.isSortingEnabled()
         self.tableWidgetServers.setSortingEnabled(False)
         item = self.tableWidgetServers.item(0, 0)
         item.setText(_translate("ServerBrowser", "Teeluola"))
-        item = self.tableWidgetServers.item(0, 1)
-        item.setText(_translate("ServerBrowser", "1"))
         item = self.tableWidgetServers.item(0, 2)
+        item.setText(_translate("ServerBrowser", "1"))
+        item = self.tableWidgetServers.item(0, 3)
         item.setText(_translate("ServerBrowser", "Normal"))
         self.tableWidgetServers.setSortingEnabled(__sortingEnabled)
         self.pushButtonObserve.setText(_translate("ServerBrowser", "Observe"))
@@ -132,4 +147,3 @@ class Ui_ServerBrowser(object):
         self.menuHelp.setTitle(_translate("ServerBrowser", "Help"))
         self.actionAbout.setText(_translate("ServerBrowser", "About..."))
         self.actionQuit.setText(_translate("ServerBrowser", "Quit"))
-

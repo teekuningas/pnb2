@@ -4,7 +4,7 @@
 """
 from PyQt5 import QtWidgets
 
-from add_server_dialog_ui import Ui_AddServerDialog
+from pnb2.server_browser.add_server_dialog_ui import Ui_AddServerDialog
 
 
 class AddServerDialogMain(QtWidgets.QDialog):

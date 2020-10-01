@@ -4,29 +4,28 @@
 import argparse
 import time
 
-from network import GraphicsClient
+from pnb2.networking.network import ObservationClient
 
-from graphics import initialize
-from graphics import render
+from pnb2.game.graphics import initialize
+from pnb2.game.graphics import render
+from pnb2.game.game import update
 
-from game import update
 
-
-from constants import UPDATE_INTERVAL
+from pnb2.game.constants import UPDATE_INTERVAL
 
 
 if __name__ == '__main__':
     """
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ip_address')
+    parser.add_argument('--address')
     parser.add_argument('--port')
 
     cli_args = parser.parse_args()
 
-    ip_address = '127.0.0.1'
-    if cli_args.ip_address:
-        ip_address = cli_args.ip_address
+    address = '0.0.0.0'
+    if cli_args.address:
+        address = cli_args.address
 
     port = 5555
     if cli_args.port:
@@ -36,7 +35,7 @@ if __name__ == '__main__':
     gfx_engine = initialize()
 
     # Establish connection
-    client = GraphicsClient(ip_address, port)
+    client = ObservationClient(address, port)
     print("Client ID: " + client.client_id)
 
     # Get initial copy of the game state

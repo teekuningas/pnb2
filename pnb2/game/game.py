@@ -1,8 +1,10 @@
 """ Contains logics of the game
 """
 
-from constants import GRAVITATION_CONSTANT
-from constants import N_PLAYER_CLIENTS_NEEDED
+from pnb2.game.constants import GRAVITATION_CONSTANT
+
+
+N_PLAYER_CLIENTS_NEEDED = 2
 
 
 def initialize_game():

@@ -4,30 +4,28 @@
 import argparse
 import time
 
-from network import PlayerClient
+from pnb2.networking.network import PlayerClient
+from pnb2.game.input_ import get_inputs
+from pnb2.game.game import update
+from pnb2.game.constants import UPDATE_INTERVAL
 
-from input_ import get_inputs
-
-from game import update
-
-from constants import UPDATE_INTERVAL
-from constants import N_PLAYER_CLIENTS_NEEDED
+N_PLAYER_CLIENTS_NEEDED = 2
 
 
 if __name__ == '__main__':
     """
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ip_address')
+    parser.add_argument('--address')
     parser.add_argument('--port')
     parser.add_argument('--bind_key')
     parser.add_argument('--rejoin_key')
 
     cli_args = parser.parse_args()
 
-    ip_address = '127.0.0.1'
-    if cli_args.ip_address:
-        ip_address = cli_args.ip_address
+    address = '127.0.0.1'
+    if cli_args.address:
+        address = cli_args.address
 
     port = 5555
     if cli_args.port:
@@ -42,7 +40,7 @@ if __name__ == '__main__':
         rejoin_key = cli_args.rejoin_key
 
     # Establish connection
-    client = PlayerClient(ip_address, port, rejoin_key)
+    client = PlayerClient(address, port, rejoin_key)
 
     print('Client ID (use on rejoin): ' + client.client_id)
 
