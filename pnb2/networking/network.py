@@ -82,7 +82,6 @@ class Server:
                     if client_state['is_alive_sent']:
                         raise Exception('Connection closed as is_alive message not answered')
                     else:
-                        print("Sending is_alive to " + str(client_idx))
                         message_dict = {'type': 'PLAYER_IS_ALIVE_REQUEST'}
                         conn.send(json.dumps(message_dict).encode('UTF-8') + 
                                   '$'.encode('utf-8'))
@@ -407,6 +406,21 @@ class Client:
             print("Client: " + str(exc))
             return
 
+    def get_game(self):
+        """ Get upstream game from server to client side
+        """
+        game = None
+
+        self.messages_lock.acquire()
+        for message_idx, message in enumerate(self.messages):
+            message_dict = json.loads(message)
+            if message_dict['type'] == 'GAME':
+                self.messages.pop(message_idx)
+                game = message_dict['value']
+        self.messages_lock.release()
+
+        return game
+
 
 class StatusRequestClient(Client):
     """ Handles status requests
@@ -497,21 +511,6 @@ class PlayerClient(Client):
                     raise Exception('PLAYER_JOIN DECLINED BY SERVER')
             self.messages_lock.release()
 
-    def get_game(self):
-        """ Get upstream game from server to client side
-        """
-        game = None
-
-        self.messages_lock.acquire()
-        for message_idx, message in enumerate(self.messages):
-            message_dict = json.loads(message)
-            if message_dict['type'] == 'GAME':
-                self.messages.pop(message_idx)
-                game = message_dict['value']
-        self.messages_lock.release()
-
-        return game
-
     def send_inputs(self, inputs):
         """ Send inputs from client to server side
         """
@@ -529,7 +528,7 @@ class PlayerClient(Client):
 class ObservationClient(Client):
     """ Handles server side connections for observation client
     """
-    def __init__(self, address='0.0.0.0', port=5555, rejoin_key=None):
+    def __init__(self, address='0.0.0.0', port=5555):
         """
         """
         Client.__init__(self, address, port)
@@ -537,23 +536,8 @@ class ObservationClient(Client):
         while True:
             if not self.connection_alive:
                 continue
-            self.join_game(rejoin_key)
+            self.join_game()
             return
-
-    def get_game(self):
-        """ Get upstream game from server to client side
-        """
-        game = None
-
-        self.messages_lock.acquire()
-        for message_idx, message in enumerate(self.messages):
-            message_dict = json.loads(message)
-            if message_dict['type'] == 'GAME':
-                self.messages.pop(message_idx)
-                game = message_dict['value']
-        self.messages_lock.release()
-
-        return game
 
     def join_game(self, rejoin_key=None):
         """
