@@ -13,9 +13,6 @@ from pnb2.game.game import update
 from pnb2.game.constants import UPDATE_INTERVAL
 
 
-N_PLAYER_CLIENTS_NEEDED = 2
-
-
 def start_server(address, port, server_id_callback=None):
     """
     """
@@ -35,27 +32,20 @@ def start_server(address, port, server_id_callback=None):
 
     print("Starting the main loop..")
     previous = time.time()
-    inputs = [[] for idx in range(N_PLAYER_CLIENTS_NEEDED)]
     while True:
 
         server.handle_disconnections()
 
         current = time.time()
 
-        # pile up inputs
-        new_inputs = server.get_inputs()
-        for idx in range(N_PLAYER_CLIENTS_NEEDED):
-            for input_ in new_inputs[idx]:
-                if input_ not in inputs[idx]:
-                    inputs[idx].append(input_)
-
         # and if enough time has passed, update game state
         if current - previous >= UPDATE_INTERVAL:
+
+            inputs = server.get_inputs()
             update(game, inputs)
             server.send_game(game)
+
             previous = current
-            # start piling up new round of inputs
-            inputs = [[] for idx in range(N_PLAYER_CLIENTS_NEEDED)]
 
     print("Finished.")
 

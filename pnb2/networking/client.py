@@ -5,6 +5,7 @@ import argparse
 import time
 
 from pnb2.networking.network import PlayerClient
+from pnb2.networking.network import ObservationClient
 from pnb2.game.input_ import get_inputs
 from pnb2.game.graphics import initialize
 from pnb2.game.graphics import render
@@ -49,8 +50,6 @@ def start_client(address, port, obs=True, player=True, bind_key=None, rejoin_key
     if obs:
         gfx_engine = initialize()
 
-    print(str(bind_key))
-
     previous = time.time()
     lag = 0
     while True:
@@ -62,19 +61,16 @@ def start_client(address, port, obs=True, player=True, bind_key=None, rejoin_key
             print("Connection dead.. Quitting..")
             break
 
-        if player:
-            new_inputs = get_inputs(bind_key)
-
-	    # Send inputs to upstream
-            if new_inputs:
-                client.send_inputs(new_inputs)
-
         # Try to get game synchronized
         while lag >= UPDATE_INTERVAL:
 
+            if player:
+                new_inputs = get_inputs(bind_key)
+                client.send_inputs(new_inputs)
+
             new_game = client.get_game()
             if new_game:
-                # if game available from socket, use it
+                # if game available from server, use it
                 game = new_game
             else:
                 # else, predict
@@ -85,11 +81,11 @@ def start_client(address, port, obs=True, player=True, bind_key=None, rejoin_key
                                   for idx in range(N_PLAYER_CLIENTS_NEEDED)])
 
             lag -= UPDATE_INTERVAL
+
         if obs:
             render(gfx_engine, game, lag / UPDATE_INTERVAL)
 
     print("Finished.")
-
 
 
 if __name__ == '__main__':

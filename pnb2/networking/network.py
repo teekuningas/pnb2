@@ -117,7 +117,9 @@ class Server:
 
             # on STATUS_REQUEST
             if message_dict.get('type', '') == 'SERVER_STATUS_REQUEST':
-                answer_dict = {'value': self.server_id}
+                answer_dict = {}
+                answer_dict['server_id'] = self.server_id
+                answer_dict['n_players'] = self.n_player_clients_connected()
 
                 if self.n_player_clients_connected() == N_PLAYER_CLIENTS_NEEDED:
                     answer_dict['type'] = 'SERVER_STATUS_RUNNING'
@@ -147,6 +149,7 @@ class Server:
                     conn.send(json.dumps(answer_dict).encode('UTF-8') + 
                               '$'.encode('utf-8'))
                     client_state['initialized'] = True
+
                 else:
                     answer_dict = {'type': 'PLAYER_JOIN_DECLINED'}
                     conn.send(json.dumps(answer_dict).encode('UTF-8') + 
@@ -316,15 +319,15 @@ class Server:
                 input_idx = int(state.get('id').split('#')[0])
 
                 state['messages_lock'].acquire()
-                for message_idx, message in enumerate(state.get('messages')):
+                for message_idx, message in enumerate(state['messages']):
                     message_dict = json.loads(message)
+
                     if message_dict['type'] == 'INPUTS':
                         state['messages'].pop(message_idx)
                         for val in message_dict['value']:
                             if val not in player_inputs:
                                 player_inputs.append(val)
                 state['messages_lock'].release()
-
                 inputs[input_idx] = player_inputs
         return inputs
 
@@ -438,7 +441,7 @@ class StatusRequestClient(Client):
                     request_sent = True
 
             if time.time() - beginning > IS_ALIVE_TIMEOUT:
-                callback('SERVER_STATUS_DOWN', None)
+                callback('SERVER_STATUS_DOWN', None, 0)
                 self.quit = True
                 return
 
@@ -449,8 +452,9 @@ class StatusRequestClient(Client):
                 message_dict = json.loads(message)
                 if 'SERVER_STATUS' in message_dict['type']:
                     type_ = message_dict['type']
-                    server_id = message_dict['value']
-                    callback(type_, server_id)
+                    server_id = message_dict['server_id']
+                    n_players = message_dict['n_players']
+                    callback(type_, server_id, n_players)
                     self.quit = True
                     return
  
