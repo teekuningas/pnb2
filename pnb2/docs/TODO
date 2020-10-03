@@ -1,12 +1,10 @@
 - sudo on tietoturvariski, tee kaikkesi jotta keyboard voitaisiin korvata pynputilla tms
+- kun add server tai join server, kysy ensin status
 - steampak steamia varten
-- qt:lla gui
 - pyinstallerilla standalone
 - serverilistaus mun palvelimelle tai teekuningas.net-domainiin. (make locatable x)
-- jos joinaa, palvelin voisi lähettää viestin että on jo täynnä, mutta odotetaan pelaajaa. voit liittyä rejoinilla.
 - pitää miettiä voisiko jollekin pnb:n natiiviosille löytää korvaajan steamista. niinkun socketeille, highscoreille ja achievementeille. ne voisi kaikki tehdä natiivina pnb:hen, mutta tehdä ne helposti korvattaviksi
 - Kuinka tehdä vielä smoothimpi tuosta grafiikasta? 
-- Inputit pitää tulla pienestäkin näpäytyksestä! eli ehkä is_pressedin sijaan joku event handler
 
 - Arkkitehtuuri:
  * run_client.py (Ajettavissa skriptinä, mutta pitää sisällään funktion, jossa kaikki olennainen)

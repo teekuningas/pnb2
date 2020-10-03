@@ -40,14 +40,14 @@ def start_client(address, port, obs=True, player=True, bind_key=None, rejoin_key
 
     player_idx = client.client_id.split('#')[0]
 
-    if obs:
-        gfx_engine = initialize()
-
     # Get initial copy of the game state
     while True:
         game = client.get_game()
         if game:
             break
+
+    if obs:
+        gfx_engine = initialize()
 
     print(str(bind_key))
 
