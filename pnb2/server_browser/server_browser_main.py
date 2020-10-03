@@ -185,7 +185,7 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
     def status_updater(self):
         """
         """
-        def callback(type_, server_id):
+        def callback(type_, server_id, n_players):
             for server in self.servers:
                 if server['server_id'] == server_id:
                     if type_ == 'SERVER_STATUS_RUNNING':
@@ -196,7 +196,8 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
                         server['status'] = 'open'
                     elif type_ == 'SERVER_STATUS_DOWN':
                         server['status'] = 'down'
-                    print("Getting info " + str(type_) + ", " + str(server_id))
+
+                    server['n_players'] = n_players
 
         while not self.quit:
             time.sleep(STATUS_UPDATE_INTERVAL)
