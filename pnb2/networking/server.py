@@ -13,17 +13,19 @@ from pnb2.game.game import update
 from pnb2.game.constants import UPDATE_INTERVAL
 
 
-def start_server(address, port, server_id_callback=None):
+def start_server(address, port, name, game_type, server_id_callback=None):
     """
     """
     address = address or '0.0.0.0'
     port = port or 5555
+    name = name or 'Default'
+    game_type = game_type or '2-2-1'
 
     print("Initializing game..")
     game = initialize_game()
 
     print("Searching for clients..")
-    server = Server(address=address, port=port)
+    server = Server(address=address, port=port, name=name, game_type=game_type)
 
     if server_id_callback:
         server_id_callback(server.server_id)
@@ -56,7 +58,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--address')
     parser.add_argument('--port')
+    parser.add_argument('--name')
+    parser.add_argument('--game_type')
 
     cli_args = parser.parse_args()
-    start_server(cli_args.address, cli_args.port)
+    start_server(cli_args.address, cli_args.port, cli_args.name, cli_args.game_type)
 

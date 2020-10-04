@@ -12,12 +12,14 @@ from pnb2.server_browser.server_browser_ui import Ui_ServerBrowser
 from pnb2.server_browser.create_server_dialog_main import CreateServerDialogMain
 from pnb2.server_browser.add_server_dialog_main import AddServerDialogMain
 
+from pnb2.networking.server import start_server
+
 from PyQt5.Qt import QApplication
 from PyQt5 import QtWidgets
 from PyQt5 import QtCore
 
 
-STATUS_UPDATE_INTERVAL = 15
+STATUS_UPDATE_INTERVAL = 10
 TABLE_UPDATE_INTERVAL = 3
 
 
@@ -51,7 +53,7 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         text = '\n'.join([
             'Name: ' + str(self.servers[row_idx]['name']),
             'Players: ' + str(self.servers[row_idx]['n_players']),
-            'Type: ' + str(self.servers[row_idx]['type']),
+            'Type: ' + str(self.servers[row_idx]['game_type']),
             'Address: ' + str(self.servers[row_idx]['address']),
             'Port: ' + str(self.servers[row_idx]['port']),
             'Status: ' + str(self.servers[row_idx]['status']),
@@ -88,7 +90,7 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         if checked is None:
             return
 
-        dialog = AddServerDialogMain(self)
+        dialog = AddServerDialogMain(self, self.add_server_callback)
         dialog.show()
 
     def on_pushButtonCreate_clicked(self, checked=None):
@@ -114,14 +116,14 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         servers = [
             {'name': 'Teeluola',
              'n_players': 0,
-             'type': '4-4-1',
+             'game_type': '4-4-1',
              'address': '0.0.0.0',
              'port': 5555,
              'status': 'down',
              'server_id': 100},
             {'name': 'Örkkien maa',
              'n_players': 1,
-             'type': '2-2-1',
+             'game_type': '2-2-1',
              'address': '0.0.0.0',
              'port': 5555,
              'status': 'down',
@@ -137,7 +139,7 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         self.ui.tableWidgetServers.setColumnCount(6)
         self.ui.tableWidgetServers.setHorizontalHeaderItem(0, QtWidgets.QTableWidgetItem('Name'))
         self.ui.tableWidgetServers.setHorizontalHeaderItem(1, QtWidgets.QTableWidgetItem('Players'))
-        self.ui.tableWidgetServers.setHorizontalHeaderItem(2, QtWidgets.QTableWidgetItem('Type'))
+        self.ui.tableWidgetServers.setHorizontalHeaderItem(2, QtWidgets.QTableWidgetItem('Game type'))
         self.ui.tableWidgetServers.setHorizontalHeaderItem(3, QtWidgets.QTableWidgetItem('Address'))
         self.ui.tableWidgetServers.setHorizontalHeaderItem(4, QtWidgets.QTableWidgetItem('Port'))
         self.ui.tableWidgetServers.setHorizontalHeaderItem(5, QtWidgets.QTableWidgetItem('Status'))
@@ -157,7 +159,7 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
             self.ui.tableWidgetServers.setItem(idx, 1, item)
 
             item = QtWidgets.QTableWidgetItem()
-            item.setText(str(server['type']))
+            item.setText(str(server['game_type']))
             self.ui.tableWidgetServers.setItem(idx, 2, item)
 
             item = QtWidgets.QTableWidgetItem()
@@ -173,10 +175,56 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
             self.ui.tableWidgetServers.setItem(idx, 5, item)
 
 
-    def create_server_callback(self, options):
+    def create_server_callback(self, name, port, game_type):
         """
         """
-        self.servers.append(options)
+        address = '0.0.0.0'
+
+        def ready(server_id): 
+            options = {}
+            options['name'] = name
+            options['game_type'] = game_type
+            options['n_players'] = 0
+            options['address'] = address
+            options['port'] = port
+            options['status'] = 'open'
+            options['server_id'] = server_id
+            self.servers.append(options)
+
+        t = threading.Thread(target=start_server, args=(address, port, ready))
+        t.start()
+
+
+    def add_server_callback(self, address, port):
+        """
+        """
+
+        def callback(message_type, server_id, n_players, name, game_type):
+            server = {}
+            if message_type == 'SERVER_STATUS_RUNNING':
+                server['status'] = 'running'
+            elif message_type == 'SERVER_STATUS_PLAYER_MISSING':
+                server['status'] = 'player_missing'
+            elif message_type == 'SERVER_STATUS_OPEN':
+                server['status'] = 'open'
+            elif message_type == 'SERVER_STATUS_DOWN':
+                return
+
+            if server_id in [serv['server_id'] for serv in self.servers]:
+                return
+
+            server['n_players'] = n_players
+            server['name'] = name
+            server['game_type'] = game_type
+            server['address'] = address
+            server['port'] = port
+            server['server_id'] = server_id
+
+            self.servers.append(server)
+
+        requester = StatusRequestClient(address=address, 
+                                        port=port)
+        requester.get_status(callback)
 
     def closeEvent(self, event):
         self.quit = True
@@ -185,19 +233,21 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
     def status_updater(self):
         """
         """
-        def callback(type_, server_id, n_players):
+        def callback(message_type, server_id, n_players, name, game_type):
             for server in self.servers:
                 if server['server_id'] == server_id:
-                    if type_ == 'SERVER_STATUS_RUNNING':
+                    if message_type == 'SERVER_STATUS_RUNNING':
                         server['status'] = 'running'
-                    elif type_ == 'SERVER_STATUS_PLAYER_MISSING':
+                    elif message_type == 'SERVER_STATUS_PLAYER_MISSING':
                         server['status'] = 'player_missing'
-                    elif type_ == 'SERVER_STATUS_OPEN':
+                    elif message_type == 'SERVER_STATUS_OPEN':
                         server['status'] = 'open'
-                    elif type_ == 'SERVER_STATUS_DOWN':
+                    elif message_type == 'SERVER_STATUS_DOWN':
                         server['status'] = 'down'
 
                     server['n_players'] = n_players
+                    server['name'] = name
+                    server['game_type'] = game_type
 
         while not self.quit:
             time.sleep(STATUS_UPDATE_INTERVAL)

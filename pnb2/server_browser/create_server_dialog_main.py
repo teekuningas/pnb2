@@ -2,13 +2,9 @@
 
 """
 """
-import threading
-
 from PyQt5 import QtWidgets
 
 from pnb2.server_browser.create_server_dialog_ui import Ui_CreateServerDialog
-
-from pnb2.networking.server import start_server
 
 
 class CreateServerDialogMain(QtWidgets.QDialog):
@@ -28,28 +24,15 @@ class CreateServerDialogMain(QtWidgets.QDialog):
         """
         """
 
-        address = '0.0.0.0'
         port = self.ui.lineEditPort.text()
+        name = self.ui.lineEditName.text()
+        type_ = self.ui.comboBoxType.currentText()
 
         try:
             port = int(port)
         except:
             raise Exception("Invalid port number")
 
-        def ready(server_id):
-            options = {}
-            options['name'] = self.ui.lineEditName.text()
-            options['type'] = self.ui.comboBoxType.currentText()
-            options['n_players'] = 0
-            options['address'] = address
-            options['port'] = port
-            options['status'] = 'open'
-            options['server_id'] = server_id
-
-            self.callback(options)
-
-        # create server
-        t = threading.Thread(target=start_server, args=(address, port, ready))
-        t.start()
+        self.callback(name, port, type_)
         self.close()
 

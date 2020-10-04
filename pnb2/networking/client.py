@@ -73,7 +73,7 @@ def start_client(address, port, obs=True, player=True, bind_key=None, rejoin_key
                 # if game available from server, use it
                 game = new_game
             else:
-                # else, predict
+                # else, predict.. 
                 if not player:
                     update(game)
                 else:

@@ -29,11 +29,14 @@ def recv_with_timeout(conn):
 class Server:
     """ Handles server side socket connections
     """
-    def __init__(self, address='0.0.0.0', port=5555):
+    def __init__(self, address='0.0.0.0', port=5555, name='Default', game_type='2-2-1'):
         """
         """
         self.server_id = ''.join((secrets.choice(string.ascii_letters) 
                                  for i in range(ID_SUFFIX_LENGTH)))
+
+        self.name = name
+        self.game_type = game_type
 
         self.clients = {}
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -120,6 +123,8 @@ class Server:
                 answer_dict = {}
                 answer_dict['server_id'] = self.server_id
                 answer_dict['n_players'] = self.n_player_clients_connected()
+                answer_dict['name'] = self.name
+                answer_dict['game_type'] = self.game_type
 
                 if self.n_player_clients_connected() == N_PLAYER_CLIENTS_NEEDED:
                     answer_dict['type'] = 'SERVER_STATUS_RUNNING'
@@ -441,7 +446,7 @@ class StatusRequestClient(Client):
                     request_sent = True
 
             if time.time() - beginning > IS_ALIVE_TIMEOUT:
-                callback('SERVER_STATUS_DOWN', None, 0)
+                callback('SERVER_STATUS_DOWN', None, None, None, None)
                 self.quit = True
                 return
 
@@ -454,7 +459,9 @@ class StatusRequestClient(Client):
                     type_ = message_dict['type']
                     server_id = message_dict['server_id']
                     n_players = message_dict['n_players']
-                    callback(type_, server_id, n_players)
+                    name = message_dict['name']
+                    game_type = message_dict['game_type']
+                    callback(type_, server_id, n_players, name, game_type)
                     self.quit = True
                     return
  

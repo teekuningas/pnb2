@@ -1,40 +1,9 @@
-- sudo on tietoturvariski, tee kaikkesi jotta keyboard voitaisiin korvata pynputilla tms
+- estä clienttien liikakertyminen ja varmista ettei ole haittaa messagejen kertymisestä (JOIN yms)
+- implement Join, Observe, Add
 - kun add server tai join server, kysy ensin status
 - steampak steamia varten
 - pyinstallerilla standalone
 - serverilistaus mun palvelimelle tai teekuningas.net-domainiin. (make locatable x)
 - pitää miettiä voisiko jollekin pnb:n natiiviosille löytää korvaajan steamista. niinkun socketeille, highscoreille ja achievementeille. ne voisi kaikki tehdä natiivina pnb:hen, mutta tehdä ne helposti korvattaviksi
-- Kuinka tehdä vielä smoothimpi tuosta grafiikasta? 
+- Implement local engine (ehkä sitten kun joukkueiden valitseminen on selkeä, nyt näyttäisi toimivan hyvin servun läpikin)
 
-- Arkkitehtuuri:
- * run_client.py (Ajettavissa skriptinä, mutta pitää sisällään funktion, jossa kaikki olennainen)
-  -> Game room
- * run_server.py (Ajettavissa skriptinä, mutta pitää sisällään funktion, jossa kaikki olennainen)
-  ** Wait for game room selections
-  ** Start the main game loop
- * run_observation.py (Ajettavissa skriptinä, mutta pitää sisällään funktion, jossa kaikki olennainen)
-  ** Start observation when main game loop has started
- * run_gui.py
-  ** Single player (Creates local one-player game)
-   -> Game room
-  ** Multiplayer
-   ** Local (Creates local two-player game)
-     -> Game room
-   ** Internet
-    ** Create server (Ask basic settings, creates player client and server locally)
-      -> Game room 
-    ** Join server (Creates player client)
-      -> Game room
-    ** Observe (Creates observation client)
-      -> During game room, wait
-      -> During game, show game
-  ** Quit
-
-Game room (not part of the gui):
- - Allows to choose teams and strategy
- - Clean and simple UI, should work both local and over network
-  * When local, let first player choose, and then let second player choose. then everything ready.
-  * When over network, server should wait that both players have sent message that everything is ready.
- - Then when accepted, the game starts.
-
-Have to make sure that the local and the networking engines stay as close to each other as possible but still let the local one have same privileges over resources.

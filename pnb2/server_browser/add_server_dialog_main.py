@@ -11,14 +11,25 @@ class AddServerDialogMain(QtWidgets.QDialog):
     """
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent, callback):
         """
         """
         QtWidgets.QDialog.__init__(self, parent)
         self.ui = Ui_AddServerDialog()
         self.ui.setupUi(self)
 
+        self.callback = callback
+
     def accept(self):
         """
         """
+        port = self.ui.lineEditPort.text()
+        address = self.ui.lineEditAddress.text()
+
+        try:
+            port = int(port)
+        except:
+            raise Exception('Invalid port number')
+
+        self.callback(address, port)
         self.close()
