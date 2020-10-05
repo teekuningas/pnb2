@@ -52,6 +52,7 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         timer.setInterval(MESSAGING_INTERVAL*1000)
         timer.timeout.connect(self.messaging_timer)
         timer.start()
+
         self.could_not_connect = False
 
 
@@ -107,7 +108,6 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         def callback(client_id):
             if not client_id:
                 self.could_not_connect = True
-           
 
         args = (address, port)
         kwargs = {
@@ -117,7 +117,6 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         }
 
         t = threading.Thread(target=start_client, args=args, kwargs=kwargs)
-        t.daemon = True
         t.start()
 
     def on_pushButtonAdd_clicked(self, checked=None):
@@ -167,7 +166,6 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         }
 
         t = threading.Thread(target=start_client, args=args, kwargs=kwargs)
-        t.daemon = True
         t.start()
  
 
@@ -263,7 +261,6 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         args = (address, port, name, game_type, ready)
 
         t = threading.Thread(target=start_server, args=args)
-        t.daemon = True
         t.start()
 
 

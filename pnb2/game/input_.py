@@ -23,13 +23,14 @@ class PynputKeyboard:
         if self.listener._running:
             self.listener._running = False
             self.listener._queue.put(None)
-            if not hasattr(self.listener, '_context'):
-                self.listener.wait()
-            try:
-                self.listener._display_stop.record_disable_context(
-                    self.listener._context)
-            except:
-                pass
+            # this might only work for linux, so must check this out for windows!!!
+            # if not hasattr(self.listener, '_context'):
+            #     self.listener.wait()
+            # try:
+            #     self.listener._display_stop.record_disable_context(
+            #         self.listener._context)
+            # except:
+            #     pass
 
     def on_press(self, key):
         self.key_status[key] = True

@@ -58,6 +58,8 @@ class Server:
     def shutdown(self):
         print("Shutdown called for server")
         self.quit = True
+        if self.sock:
+            self.sock.close()
 
     def threaded_client(self, conn, client_idx):
         """
@@ -71,6 +73,7 @@ class Server:
                         'initialized': False,
                         'active': True,
                         'is_alive_sent': False}
+
         self.clients[client_idx] = client_state
 
         # start communication
@@ -290,9 +293,6 @@ class Server:
                     '$'.encode('utf-8'))
 
         while True:
-            if self.quit:
-                return
-
             if self.n_player_clients_connected() == N_PLAYER_CLIENTS_NEEDED:
                 break
 
@@ -406,8 +406,8 @@ class Client:
                                 self.handle_is_alive(parts)
 
             except Exception as exc:
+                print(str(exc))
                 sock.close()
-                print("Client: " + str(exc))
 
             self.connection_alive = False
             print("Lost connection to server.")
@@ -494,21 +494,12 @@ class PlayerClient(Client):
         beginning = time.time()
         while True:
             if time.time() - beginning > IS_ALIVE_TIMEOUT:
-                print("Could not connect to the server")
-                self.shutdown()
-                return
+                raise Exception('Could not connect to the server')
 
-            if not self.connection_alive:
-                continue
+            if self.connection_alive:
+                break
 
-            try:
-                self.join_game(rejoin_key)
-            except Exception as exc:
-                print(str(exc))
-                self.shutdown()
-                return
-
-            return
+        self.join_game(rejoin_key)
 
     def join_game(self, rejoin_key=None):
         """
@@ -581,17 +572,10 @@ class ObservationClient(Client):
             if time.time() - beginning > IS_ALIVE_TIMEOUT:
                 raise Exception('Could not connect to the server.')
 
-            if not self.connection_alive:
-                continue
+            if self.connection_alive:
+                break
 
-            try:
-                self.join_game()
-            except Exception as exc:
-                print(str(exc))
-                self.shutdown()
-                return
-
-            return
+        self.join_game()
 
     def join_game(self, rejoin_key=None):
         """

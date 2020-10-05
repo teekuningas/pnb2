@@ -28,6 +28,8 @@ def start_client(address, port, obs=True, player=True, bind_key=None, rejoin_key
         input_engine = None
         gfx_engine = None
 
+        client = None
+
         try:
             if obs and not player:
                 client = ObservationClient(address, port)
