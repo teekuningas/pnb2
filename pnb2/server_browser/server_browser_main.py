@@ -13,6 +13,7 @@ from pnb2.server_browser.create_server_dialog_main import CreateServerDialogMain
 from pnb2.server_browser.add_server_dialog_main import AddServerDialogMain
 
 from pnb2.networking.server import start_server
+from pnb2.networking.client import start_client
 
 from PyQt5.Qt import QApplication
 from PyQt5 import QtWidgets
@@ -21,6 +22,7 @@ from PyQt5 import QtCore
 
 STATUS_UPDATE_INTERVAL = 10
 TABLE_UPDATE_INTERVAL = 3
+MESSAGING_INTERVAL = 1
 
 
 class ServerBrowserMain(QtWidgets.QMainWindow):
@@ -44,6 +46,13 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         timer.setInterval(TABLE_UPDATE_INTERVAL*1000)
         timer.timeout.connect(self.update_table)
         timer.start()
+
+        timer = QtCore.QTimer(self)
+        timer.setInterval(MESSAGING_INTERVAL*1000)
+        timer.timeout.connect(self.messaging_timer)
+        timer.start()
+        self.could_not_connect = False
+
 
     def on_tableWidgetServers_currentItemChanged(self, item):
         """
@@ -82,6 +91,29 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         if checked is None:
             return
 
+        current_row = self.ui.tableWidgetServers.currentRow()
+        if current_row == -1:
+            return
+
+        sel_server = self.servers[current_row]
+        address = sel_server['address']
+        port = sel_server['port']
+
+        def callback(client_id):
+            if not client_id:
+                self.could_not_connect = True
+           
+
+        args = (address, port)
+        kwargs = {
+            'obs': True,
+            'player': False,
+            'callback': callback,
+        }
+
+        t = threading.Thread(target=start_client, args=args, kwargs=kwargs)
+        t.start()
+
         print("Observe clicked")
 
     def on_pushButtonAdd_clicked(self, checked=None):
@@ -107,7 +139,6 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         """
         if checked is None:
             return
-
         print("Join clicked")
 
     def read_servers(self):
@@ -122,7 +153,7 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
              'status': 'down',
              'server_id': 100},
             {'name': 'Örkkien maa',
-             'n_players': 1,
+             'n_players': 0,
              'game_type': '2-2-1',
              'address': '0.0.0.0',
              'port': 5555,
@@ -174,6 +205,14 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
             item.setText(str(server['status']))
             self.ui.tableWidgetServers.setItem(idx, 5, item)
 
+    def messaging_timer(self):
+        if self.could_not_connect:
+            self.could_not_connect = False
+            msg = QtWidgets.QMessageBox(self)
+            msg.setText('Could not connect to the server')
+            msg.setWindowTitle('PNB')
+            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            msg.show()
 
     def create_server_callback(self, name, port, game_type):
         """

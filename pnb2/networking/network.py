@@ -475,9 +475,14 @@ class PlayerClient(Client):
         """
         Client.__init__(self, address, port)
 
+        beginning = time.time()
         while True:
+            if time.time() - beginning > IS_ALIVE_TIMEOUT:
+                raise Exception('Could not connect to the server')
+
             if not self.connection_alive:
                 continue
+
             self.join_game(rejoin_key)
             return
 
@@ -544,9 +549,14 @@ class ObservationClient(Client):
         """
         Client.__init__(self, address, port)
 
+        beginning = time.time()
         while True:
+            if time.time() - beginning > IS_ALIVE_TIMEOUT:
+                raise Exception('Could not connect to the server')
+
             if not self.connection_alive:
                 continue
+
             self.join_game()
             return
 

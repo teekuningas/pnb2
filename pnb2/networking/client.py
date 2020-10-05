@@ -21,18 +21,23 @@ def start_client(address, port, obs=True, player=True, bind_key=None, rejoin_key
     address = address or '0.0.0.0'
     port = port or 5555
 
-    bind_key = cli_args.bind_key or 'keyboard_right'
+    bind_key = bind_key or 'keyboard_right'
+    rejoin_key = rejoin_key or None
 
-    rejoin_key = cli_args.rejoin_key or None
-
-    if obs and not player:
-        client = ObservationClient(address, port)
-    elif obs and player:
-        client = PlayerClient(address, port, rejoin_key=rejoin_key)
-    elif not obs and player:
-        client = PlayerClient(address, port, rejoin_key=rejoin_key)
-    else:
-        raise Exception('Must be player or obs client')
+    try:
+        if obs and not player:
+            client = ObservationClient(address, port)
+        elif obs and player:
+            client = PlayerClient(address, port, rejoin_key=rejoin_key)
+        elif not obs and player:
+            client = PlayerClient(address, port, rejoin_key=rejoin_key)
+        else:
+            raise Exception('Must be player or obs client')
+    except Exception as exc:
+        print(str(exc))
+        if callback:
+            callback(None)
+        return
 
     print('Client ID (use on rejoin): ' + client.client_id)
 
