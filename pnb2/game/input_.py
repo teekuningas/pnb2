@@ -12,13 +12,24 @@ class PynputKeyboard:
         """
         self.key_status = {}
 
-        def listener_thread():
-            with Listener(on_press=self.on_press,
-                          on_release=self.on_release) as listener:
-                listener.join()
+        self.listener = Listener(
+            on_press=self.on_press,
+            on_release=self.on_release)
+        self.listener.daemon = False
+        self.listener.start()
 
-        t = threading.Thread(target=listener_thread)
-        t.start()
+    def shutdown(self):
+        # self.listener.stop hangs sometimes so use a fix:
+        if self.listener._running:
+            self.listener._running = False
+            self.listener._queue.put(None)
+            if not hasattr(self.listener, '_context'):
+                self.listener.wait()
+            try:
+                self.listener._display_stop.record_disable_context(
+                    self.listener._context)
+            except:
+                pass
 
     def on_press(self, key):
         self.key_status[key] = True
@@ -64,11 +75,15 @@ class PynputKeyboard:
             actions.extend(movements)
         return actions
 
-pynput_keyboard = PynputKeyboard()
-get_inputs = pynput_keyboard.get_inputs
+
+def initialize():
+    pynput_keyboard = PynputKeyboard()
+    return pynput_keyboard
+
 
 if __name__ == '__main__':
     """
     """
+    pk = initialize()
     while True:
-        print(get_inputs('keyboard_left'))
+        print(pk.get_inputs('keyboard_left'))

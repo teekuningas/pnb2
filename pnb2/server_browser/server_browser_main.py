@@ -40,6 +40,7 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         self.quit = False
 
         t = threading.Thread(target=self.status_updater)
+        t.daemon = True
         t.start()
 
         timer = QtCore.QTimer(self)
@@ -83,7 +84,11 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         if checked is None:
             return
 
-        print("About clicked")
+        msg = QtWidgets.QMessageBox(self)
+        msg.setText('For Finnish baseball (2020)')
+        msg.setWindowTitle('PNB')
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.show()
 
     def on_pushButtonObserve_clicked(self, checked=None):
         """
@@ -112,9 +117,8 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         }
 
         t = threading.Thread(target=start_client, args=args, kwargs=kwargs)
+        t.daemon = True
         t.start()
-
-        print("Observe clicked")
 
     def on_pushButtonAdd_clicked(self, checked=None):
         """
@@ -139,7 +143,33 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
         """
         if checked is None:
             return
-        print("Join clicked")
+
+        current_row = self.ui.tableWidgetServers.currentRow()
+        if current_row == -1:
+            return
+
+        sel_server = self.servers[current_row]
+        address = sel_server['address']
+        port = sel_server['port']
+
+        def callback(client_id):
+            if not client_id:
+                self.could_not_connect = True
+            else:
+                self.servers[current_row]['rejoin_key'] = client_id
+
+        args = (address, port)
+        kwargs = {
+            'obs': True,
+            'player': True,
+            'rejoin_key': sel_server.get('rejoin_key'),
+            'callback': callback,
+        }
+
+        t = threading.Thread(target=start_client, args=args, kwargs=kwargs)
+        t.daemon = True
+        t.start()
+ 
 
     def read_servers(self):
         """
@@ -230,7 +260,10 @@ class ServerBrowserMain(QtWidgets.QMainWindow):
             options['server_id'] = server_id
             self.servers.append(options)
 
-        t = threading.Thread(target=start_server, args=(address, port, ready))
+        args = (address, port, name, game_type, ready)
+
+        t = threading.Thread(target=start_server, args=args)
+        t.daemon = True
         t.start()
 
 

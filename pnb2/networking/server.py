@@ -16,40 +16,48 @@ from pnb2.game.constants import UPDATE_INTERVAL
 def start_server(address, port, name, game_type, server_id_callback=None):
     """
     """
-    address = address or '0.0.0.0'
-    port = port or 5555
-    name = name or 'Default'
-    game_type = game_type or '2-2-1'
+    try:
+        address = address or '0.0.0.0'
+        port = port or 5555
+        name = name or 'Default'
+        game_type = game_type or '2-2-1'
 
-    print("Initializing game..")
-    game = initialize_game()
+        server = None
 
-    print("Searching for clients..")
-    server = Server(address=address, port=port, name=name, game_type=game_type)
+        print("Initializing game..")
+        game = initialize_game()
 
-    if server_id_callback:
-        server_id_callback(server.server_id)
+        print("Searching for clients..")
+        server = Server(address=address, port=port, name=name, game_type=game_type)
 
-    server.wait_for_players()
+        if server_id_callback:
+            server_id_callback(server.server_id)
 
-    print("Starting the main loop..")
-    previous = time.time()
-    while True:
+        server.wait_for_players()
 
-        server.handle_disconnections()
+        print("Starting the main loop..")
+        previous = time.time()
+        while True:
 
-        current = time.time()
+            server.handle_disconnections()
 
-        # and if enough time has passed, update game state
-        if current - previous >= UPDATE_INTERVAL:
+            current = time.time()
 
-            inputs = server.get_inputs()
-            update(game, inputs)
-            server.send_game(game)
+            # and if enough time has passed, update game state
+            if current - previous >= UPDATE_INTERVAL:
 
-            previous = current
+                inputs = server.get_inputs()
+                update(game, inputs)
+                server.send_game(game)
 
-    print("Finished.")
+                previous = current
+
+    except Exception as exc:
+        print(str(exc))
+        if server:
+            server.shutdown()
+        
+    print("Finished gracefully.")
 
 
 if __name__ == '__main__':

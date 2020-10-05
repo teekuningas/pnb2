@@ -32,6 +32,8 @@ class Server:
     def __init__(self, address='0.0.0.0', port=5555, name='Default', game_type='2-2-1'):
         """
         """
+        self.quit = False
+
         self.server_id = ''.join((secrets.choice(string.ascii_letters) 
                                  for i in range(ID_SUFFIX_LENGTH)))
 
@@ -52,6 +54,10 @@ class Server:
         while True:
             if self.n_player_clients_connected() == N_PLAYER_CLIENTS_NEEDED:
                 break
+
+    def shutdown(self):
+        print("Shutdown called for server")
+        self.quit = True
 
     def threaded_client(self, conn, client_idx):
         """
@@ -98,6 +104,9 @@ class Server:
                     self.clients[client_idx]['messages_lock'].release()
 
                     self.handle_negotiation(client_idx, messages)
+
+                if self.quit:
+                    raise Exception('Quit initiated by parent')
 
             except Exception as exc:
                 print("Server: " + str(exc))
@@ -211,6 +220,10 @@ class Server:
         """ Actively, in a thread, look for new clients
         """
         while True:
+            # this might respond with delay as sock.accept blocks..
+            if self.quit:
+                return
+
             conn, addr = self.sock.accept()
             print("Negotiating with: " + str(addr))
 
@@ -277,6 +290,9 @@ class Server:
                     '$'.encode('utf-8'))
 
         while True:
+            if self.quit:
+                return
+
             if self.n_player_clients_connected() == N_PLAYER_CLIENTS_NEEDED:
                 break
 
@@ -361,10 +377,12 @@ class Client:
 
                     buffer_ = ""
                     while True:
+
                         if self.quit:
-                            print("Thread quits due to main program quit.")
                             sock.close()
+                            print("Quit initiated by parent")
                             return
+
                         message = sock.recv(SOCKET_MESSAGE_LENGTH)
                         buffer_ = buffer_ + message.decode('utf-8')
 
@@ -399,20 +417,20 @@ class Client:
         t = threading.Thread(target=threaded_connection)
         t.start()
 
-    def handle_is_alive(self, messages):
-        try:
-            for message in messages:
-                message_dict = json.loads(message)
-                if message_dict['type'] == 'PLAYER_IS_ALIVE_REQUEST':
-                    answer_dict = {'type': 'PLAYER_IS_ALIVE_ANSWER'}
-                    # Use $ as a message separator
-                    self.sock.send(json.dumps(answer_dict).encode('UTF-8') + 
-                                   '$'.encode('utf-8'))
-                    break
 
-        except Exception as exc:
-            print("Client: " + str(exc))
-            return
+    def shutdown(self):
+        print("Shutdown called for client")
+        self.quit = True
+
+    def handle_is_alive(self, messages):
+        for message in messages:
+            message_dict = json.loads(message)
+            if message_dict['type'] == 'PLAYER_IS_ALIVE_REQUEST':
+                answer_dict = {'type': 'PLAYER_IS_ALIVE_ANSWER'}
+                # Use $ as a message separator
+                self.sock.send(json.dumps(answer_dict).encode('UTF-8') + 
+                               '$'.encode('utf-8'))
+                break
 
     def get_game(self):
         """ Get upstream game from server to client side
@@ -447,7 +465,6 @@ class StatusRequestClient(Client):
 
             if time.time() - beginning > IS_ALIVE_TIMEOUT:
                 callback('SERVER_STATUS_DOWN', None, None, None, None)
-                self.quit = True
                 return
 
             if not self.messages:
@@ -462,7 +479,6 @@ class StatusRequestClient(Client):
                     name = message_dict['name']
                     game_type = message_dict['game_type']
                     callback(type_, server_id, n_players, name, game_type)
-                    self.quit = True
                     return
  
 
@@ -478,12 +494,20 @@ class PlayerClient(Client):
         beginning = time.time()
         while True:
             if time.time() - beginning > IS_ALIVE_TIMEOUT:
-                raise Exception('Could not connect to the server')
+                print("Could not connect to the server")
+                self.shutdown()
+                return
 
             if not self.connection_alive:
                 continue
 
-            self.join_game(rejoin_key)
+            try:
+                self.join_game(rejoin_key)
+            except Exception as exc:
+                print(str(exc))
+                self.shutdown()
+                return
+
             return
 
     def join_game(self, rejoin_key=None):
@@ -506,7 +530,10 @@ class PlayerClient(Client):
                 raise Exception('Could not send PLAYER_JOIN message to the server')
 
         done = False
+        beginning = time.time()
         while not done:
+            if time.time() - beginning > IS_ALIVE_TIMEOUT:
+                raise Exception('Could not connect to the server.')
 
             self.messages_lock.acquire()
             for message_idx, message in enumerate(self.messages):
@@ -552,12 +579,18 @@ class ObservationClient(Client):
         beginning = time.time()
         while True:
             if time.time() - beginning > IS_ALIVE_TIMEOUT:
-                raise Exception('Could not connect to the server')
+                raise Exception('Could not connect to the server.')
 
             if not self.connection_alive:
                 continue
 
-            self.join_game()
+            try:
+                self.join_game()
+            except Exception as exc:
+                print(str(exc))
+                self.shutdown()
+                return
+
             return
 
     def join_game(self, rejoin_key=None):
@@ -572,7 +605,11 @@ class ObservationClient(Client):
             raise Exception('Could not send OBSERVATION_JOIN message to the server')
 
         done = False
+        beginning = time.time()
         while not done:
+            if time.time() - beginning > IS_ALIVE_TIMEOUT:
+                raise Exception('Could not connect to the server.')
+
             self.messages_lock.acquire()
             for message_idx, message in enumerate(self.messages):
                 message_dict = json.loads(message)
