@@ -1,9 +1,9 @@
-- estä clienttien liikakertyminen ja varmista ettei ole haittaa messagejen kertymisestä (JOIN yms)
-- implement Join, Observe, Add
-- kun add server tai join server, kysy ensin status
-- steampak steamia varten
 - pyinstallerilla standalone
+- rejoin_key tiedostoon?
+- estä clienttien liikakertyminen ja varmista ettei ole haittaa messagejen kertymisestä (JOIN yms)
+- steampak steamia varten
 - serverilistaus mun palvelimelle tai teekuningas.net-domainiin. (make locatable x)
-- pitää miettiä voisiko jollekin pnb:n natiiviosille löytää korvaajan steamista. niinkun socketeille, highscoreille ja achievementeille. ne voisi kaikki tehdä natiivina pnb:hen, mutta tehdä ne helposti korvattaviksi
+- pitää miettiä voisiko jollekin pnb:n natiiviosille löytää korvaajan steamista. niinkun socketeille, highscoreille ja achievementeille. 
+  ne voisi kaikki tehdä natiivina pnb:hen, mutta tehdä ne helposti korvattaviksi
 - Implement local engine (ehkä sitten kun joukkueiden valitseminen on selkeä, nyt näyttäisi toimivan hyvin servun läpikin)
 

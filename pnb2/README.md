@@ -17,8 +17,6 @@ Use steampak and steamworks 1.42, run steam within same terminal.
 
 ### Running the game
 #### Run server
-python run\_server.py
-#### Run input client
-sudo python run\_player\_client.py
-### Run graphics client
-python run\_graphics\_client.py
+python -m pnb2.networking.server
+#### Run client
+python -m pnb2.networking.client
